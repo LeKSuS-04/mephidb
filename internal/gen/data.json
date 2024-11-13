@@ -1,0 +1,337 @@
+{
+  "dishes": [
+    {
+      "name": "Caesar Salad with Chicken",
+      "description": "Classic Caesar salad with chicken, crispy croutons, and Caesar dressing",
+      "cuisine": "European",
+      "ingredients": [
+        "Romaine lettuce",
+        "Chicken breast",
+        "Parmesan cheese",
+        "Croutons (bread, garlic, olive oil)",
+        "Caesar dressing (mayonnaise, anchovies, garlic, lemon juice, mustard)"
+      ],
+      "weight": 200,
+      "nutrition": {
+        "calories": 180,
+        "protein": 15,
+        "fat": 10,
+        "carbs": 5
+      },
+      "allergens": ["Gluten", "Dairy", "Fish"],
+      "rating": 4.73
+    },
+    {
+      "name": "Margherita Pizza",
+      "description": "Pizza with tomato sauce and mozzarella cheese",
+      "cuisine": "Italian",
+      "ingredients": [
+        "Dough (flour, water, salt, yeast, olive oil)",
+        "Tomato sauce (tomato, olive oil, garlic, basil, salt, pepper)",
+        "Mozzarella cheese",
+        "Basil"
+      ],
+      "weight": 450,
+      "nutrition": {
+        "calories": 250,
+        "protein": 12,
+        "fat": 8,
+        "carbs": 30
+      },
+      "allergens": ["Gluten", "Dairy"],
+      "rating": 4.86
+    },
+    {
+      "name": "Philadelphia Roll",
+      "description": "Sushi rolls with salmon, cream cheese, and avocado",
+      "cuisine": "Japanese",
+      "ingredients": ["Rice", "Salmon", "Cream cheese", "Avocado", "Nori"],
+      "weight": 200,
+      "nutrition": {
+        "calories": 220,
+        "protein": 10,
+        "fat": 8,
+        "carbs": 28
+      },
+      "allergens": ["Fish", "Dairy"],
+      "rating": 4.97
+    },
+    {
+      "name": "Tom Yum with Shrimp",
+      "description": "Thai soup with shrimp and coconut milk",
+      "cuisine": "Thai",
+      "ingredients": [
+        "Chicken broth",
+        "Coconut milk",
+        "Shrimp",
+        "Champignon mushrooms",
+        "Lime",
+        "Chili pepper",
+        "Lemongrass",
+        "Kaffir lime"
+      ],
+      "weight": 300,
+      "nutrition": {
+        "calories": 150,
+        "protein": 10,
+        "fat": 8,
+        "carbs": 5
+      },
+      "allergens": ["Seafood"],
+      "rating": 4.99
+    },
+    {
+      "name": "Carbonara Pasta",
+      "description": "Pasta with creamy sauce, bacon, and parmesan cheese",
+      "cuisine": "Italian",
+      "ingredients": [
+        "Pasta",
+        "Bacon",
+        "Cream",
+        "Parmesan cheese",
+        "Black pepper"
+      ],
+      "weight": 300,
+      "nutrition": {
+        "calories": 400,
+        "protein": 18,
+        "fat": 25,
+        "carbs": 40
+      },
+      "allergens": ["Gluten", "Dairy"],
+      "rating": 4.79
+    },
+    {
+      "name": "Gazpacho",
+      "description": "Cold vegetable soup",
+      "cuisine": "Spanish",
+      "ingredients": [
+        "Tomatoes",
+        "Cucumbers",
+        "Bell peppers",
+        "Garlic",
+        "Onion",
+        "Olive oil",
+        "Vinegar",
+        "Bread"
+      ],
+      "weight": 250,
+      "nutrition": {
+        "calories": 90,
+        "protein": 2,
+        "fat": 4,
+        "carbs": 12
+      },
+      "allergens": ["Gluten"],
+      "rating": 4.61
+    },
+    {
+      "name": "Borscht",
+      "description": "Traditional Ukrainian soup with beef and beets",
+      "cuisine": "Eastern European",
+      "ingredients": [
+        "Beef",
+        "Beets",
+        "Potatoes",
+        "Cabbage",
+        "Carrots",
+        "Onion",
+        "Garlic",
+        "Tomato paste",
+        "Dill",
+        "Bay leaves"
+      ],
+      "weight": 300,
+      "nutrition": {
+        "calories": 120,
+        "protein": 6,
+        "fat": 6,
+        "carbs": 12
+      },
+      "allergens": [],
+      "rating": 4.85
+    },
+    {
+      "name": "Tuna Sushi",
+      "description": "Sushi with tuna and rice, served with wasabi and soy sauce",
+      "cuisine": "Japanese",
+      "ingredients": ["Rice", "Tuna", "Nori", "Wasabi", "Soy sauce"],
+      "weight": 120,
+      "nutrition": {
+        "calories": 100,
+        "protein": 10,
+        "fat": 1,
+        "carbs": 15
+      },
+      "allergens": ["Fish"],
+      "rating": 4.55
+    },
+    {
+      "name": "Miso Soup",
+      "description": "Light Japanese soup with tofu, seaweed, and green onions",
+      "cuisine": "Japanese",
+      "ingredients": [
+        "Miso paste",
+        "Tofu",
+        "Wakame seaweed",
+        "Green onion",
+        "Dashi"
+      ],
+      "weight": 200,
+      "nutrition": {
+        "calories": 80,
+        "protein": 4,
+        "fat": 2,
+        "carbs": 8
+      },
+      "allergens": ["Soy products"],
+      "rating": 4.39
+    },
+    {
+      "name": "Bruschetta with Tomatoes",
+      "description": "Light appetizer with tomatoes, basil, and olive oil on toasted bread",
+      "cuisine": "Italian",
+      "ingredients": [
+        "Bread (flour, water, salt, yeast)",
+        "Tomatoes",
+        "Basil",
+        "Garlic",
+        "Olive oil"
+      ],
+      "weight": 100,
+      "nutrition": {
+        "calories": 150,
+        "protein": 5,
+        "fat": 7,
+        "carbs": 18
+      },
+      "allergens": ["Gluten"],
+      "rating": 4.67
+    },
+    {
+      "name": "Beef Dumplings",
+      "description": "Traditional dumplings with beef, served with sour cream",
+      "cuisine": "Russian",
+      "ingredients": [
+        "Dough (flour, water, salt, egg)",
+        "Beef filling",
+        "Onion",
+        "Salt",
+        "Pepper"
+      ],
+      "weight": 250,
+      "nutrition": {
+        "calories": 280,
+        "protein": 12,
+        "fat": 12,
+        "carbs": 30
+      },
+      "allergens": ["Gluten", "Eggs", "Dairy"],
+      "rating": 4.65
+    }
+  ],
+  "commodities": [
+    {
+      "name": "Sliced White Bread",
+      "description": "Soft white bread with a tender crust, sliced for convenience",
+      "category": "Bakery",
+      "ingredients": [
+        "Wheat flour",
+        "Water",
+        "Yeast",
+        "Sugar",
+        "Salt",
+        "Vegetable oil",
+        "Dough enhancer"
+      ],
+      "weight": 500,
+      "rating": 4.66
+    },
+    {
+      "name": "100% Orange Juice Pago",
+      "description": "Natural orange juice with no added sugar",
+      "category": "Beverages",
+      "ingredients": ["Orange juice"],
+      "weight": 1,
+      "rating": 4.78
+    },
+    {
+      "name": "Strawberry Yogurt 'Savushkin' 2%",
+      "description": "Classic yogurt with strawberry pieces, rich and natural",
+      "category": "Dairy Products",
+      "ingredients": [
+        "Pasteurized milk",
+        "Strawberries",
+        "Sugar",
+        "Stabilizers",
+        "Starter culture",
+        "Natural flavor"
+      ],
+      "weight": 125,
+      "rating": 4.5
+    },
+    {
+      "name": "Sour Cream 20% 'Ekomilk'",
+      "description": "Creamy sour cream with medium fat content for sauces and baking",
+      "category": "Dairy Products",
+      "ingredients": ["Pasteurized cream", "Lactic acid bacteria starter"],
+      "weight": 200,
+      "rating": 4.84
+    },
+    {
+      "name": "Russian Hard Cheese 'Belebeevsky'",
+      "description": "Classic hard cheese with a rich taste, ideal for sandwiches and casseroles",
+      "category": "Dairy Products",
+      "ingredients": ["Pasteurized cow milk", "Salt", "Rennet"],
+      "weight": 300,
+      "rating": 4.77
+    },
+    {
+      "name": "Mozzarella Cheese 'Valio'",
+      "description": "Soft and fresh mozzarella cheese for salads, pizzas, and sandwiches",
+      "category": "Dairy Products",
+      "ingredients": ["Cow milk", "Salt", "Rennet"],
+      "weight": 150,
+      "rating": 4.72
+    },
+    {
+      "name": "Kefir 3.2% 'Tauris'",
+      "description": "Thick and creamy kefir drink made from fermented milk",
+      "category": "Dairy Products",
+      "ingredients": ["Milk", "Kefir starter culture"],
+      "weight": 900,
+      "rating": 4.69
+    },
+    {
+      "name": "Mayonnaise 'Tartarin' 67%",
+      "description": "Thick and creamy mayonnaise, ideal for salads and sandwiches",
+      "category": "Condiments",
+      "ingredients": [
+        "Vegetable oil",
+        "Egg yolk",
+        "Mustard",
+        "Vinegar",
+        "Sugar",
+        "Salt"
+      ],
+      "weight": 300,
+      "rating": 4.74
+    },
+    {
+      "name": "Olive Oil 'Olivaia'",
+      "description": "Extra virgin olive oil with a delicate and smooth taste",
+      "category": "Oils & Vinegar",
+      "ingredients": ["Olive oil"],
+      "weight": 1000,
+      "rating": 4.8
+    },
+    {
+      "name": "Vinegar 'Peasant'",
+      "description": "Natural vinegar made from fermented apples",
+      "category": "Oils & Vinegar",
+      "ingredients": ["Apple vinegar"],
+      "weight": 500,
+      "rating": 4.62
+    }
+  ]
+}

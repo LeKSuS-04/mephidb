@@ -1,0 +1,9 @@
+postgres.leksus.net {
+    basic_auth {
+        admin $2a$12$EmhwclrkiJdX1H9zdZW1reuILSat3xfVU2BPxvEqZhjiugYpKy75y
+    }
+
+    reverse_proxy {
+        to ui:8081
+    }
+}
