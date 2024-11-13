@@ -15,19 +15,19 @@ import (
 )
 
 const (
-	UserCount           = 500_000
+	UserCount           = 50_000
 	CardsPerUserMin     = 1
 	CardsPerUserMax     = 5
 	AddressesPerUserMin = 1
 	AddressesPerUserMax = 10
 
-	CourierCount = 10_000
+	CourierCount = 1_000
 
-	OrderCount       = 3_000_000
+	OrderCount       = 300_000
 	MinItemsPerOrder = 1
 	MaxItemsPerOrder = 10
 
-	SupplierCount       = 1_000
+	SupplierCount       = 100
 	MinItemsPerSupplier = 3
 	MaxItemsPerSupplier = 10
 )
