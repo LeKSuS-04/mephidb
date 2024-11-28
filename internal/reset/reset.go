@@ -24,7 +24,7 @@ var tableNames = []string{
 	"categories",
 	"categories_to_targets",
 	"suppliers",
-	// "discounts",
+	"discounts",
 }
 
 func Reset(pg *pgxpool.Pool) error {

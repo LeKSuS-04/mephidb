@@ -13,6 +13,9 @@ VALUES (@user_id, @address);
 INSERT INTO user_cards (user_id, number)
 VALUES (@user_id, @number);
 
+-- name: SelectUserCardIDs :many
+SELECT id FROM user_cards;
+
 -- name: CreateOrders :copyfrom
 INSERT INTO orders (user_id, timestamp, source_address, target_address, courier_id, status, payment_id)
 VALUES (@user_id, @timestamp, @source_address, @target_address, @courier_id, @status, @payment_id);
@@ -25,8 +28,8 @@ INSERT INTO orders_composition (order_id, dish_id, commodity_id)
 VALUES (@order_id, sqlc.narg('dish_id'), sqlc.narg('commodity_id'));
 
 -- name: CreatePayments :copyfrom
-INSERT INTO payments (method, status)
-VALUES (@method, @status);
+INSERT INTO payments (method, card_id, timestamp, status)
+VALUES (@method, @card_id, @timestamp, @status);
 
 -- name: SelectPaymentIDs :many
 SELECT id FROM payments;
@@ -70,8 +73,13 @@ VALUES (@name, @work_time_start, @work_time_end, @rating, @address);
 -- name: SelectSupplierIDs :many
 SELECT id FROM suppliers;
 
-/*
 -- name: CreateDiscounts :copyfrom
-INSERT INTO discounts (name, description, start_time, end_time, status)
-VALUES (@name, @description, @start_time, @end_time, @status);
-*/
+INSERT INTO discounts (name, description, type, terms, active)
+VALUES (@name, @description, @type, @terms, @active);
+
+-- name: SelectDiscountIDs :many
+SELECT id FROM discounts;
+
+-- name: CreateDiscountTargets :copyfrom
+INSERT INTO discount_to_targets (dish_id, commodity_id, discount_id)
+VALUES (sqlc.narg('dish_id'), sqlc.narg('commodity_id'), @discount_id);

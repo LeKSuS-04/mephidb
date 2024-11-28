@@ -15,27 +15,32 @@ import (
 )
 
 const (
-	UserCount           = 50_000
+	AmountAmplifier = 1_000
+
+	UserCount           = 50 * AmountAmplifier
 	CardsPerUserMin     = 1
 	CardsPerUserMax     = 5
 	AddressesPerUserMin = 1
 	AddressesPerUserMax = 10
 
-	CourierCount = 1_000
+	CourierCount = 1 * AmountAmplifier
 
-	OrderCount       = 300_000
+	OrderCount       = 300 * AmountAmplifier
 	MinItemsPerOrder = 1
 	MaxItemsPerOrder = 10
 
-	SupplierCount       = 100
+	SupplierCount       = max(5, AmountAmplifier/10)
 	MinItemsPerSupplier = 3
 	MaxItemsPerSupplier = 10
+
+	DiscountCount = max(5, AmountAmplifier/2)
 )
 
 func Generate(q *queries.Queries) error {
 	launch := launcher.New()
 
 	usersFut := future.New[[]int32]()
+	userCardsFut := future.New[[]int32]()
 	couriersFut := future.New[[]int32]()
 	paymentsFut := future.New[[]int32]()
 	ordersFut := future.New[[]int32]()
@@ -43,6 +48,7 @@ func Generate(q *queries.Queries) error {
 	dishesFut := future.New[[]int32]()
 	commoditiesFut := future.New[[]int32]()
 	categoriesFut := future.New[[]int32]()
+	discountsFut := future.New[[]int32]()
 
 	launch.Go(func() error {
 		userIDs, err := createUsers(q)
@@ -54,12 +60,22 @@ func Generate(q *queries.Queries) error {
 		return err
 	})
 
-	launch.Go(func() error {
+	launch.Go(func() (err error) {
+		defer func() {
+			if err != nil {
+				userCardsFut.Cancel()
+			}
+		}()
 		userIDs, err := usersFut.Get()
 		if err != nil {
 			return errors.New("users not created")
 		}
-		return createCards(q, userIDs)
+		userCardIDs, err := createCards(q, userIDs)
+		if err != nil {
+			return err
+		}
+		userCardsFut.Set(userCardIDs)
+		return nil
 	})
 
 	launch.Go(func() error {
@@ -80,8 +96,17 @@ func Generate(q *queries.Queries) error {
 		return nil
 	})
 
-	launch.Go(func() error {
-		paymentIDs, err := createPayments(q)
+	launch.Go(func() (err error) {
+		defer func() {
+			if err != nil {
+				paymentsFut.Cancel()
+			}
+		}()
+		userCardIDs, err := userCardsFut.Get()
+		if err != nil {
+			return errors.New("cards not created")
+		}
+		paymentIDs, err := createPayments(q, userCardIDs)
 		if err != nil {
 			paymentsFut.Cancel()
 			return err
@@ -205,6 +230,32 @@ func Generate(q *queries.Queries) error {
 		return createCategoriesToTargets(q, categoryIDs, dishIDs, commodityIDs)
 	})
 
+	launch.Go(func() error {
+		discountIDs, err := createDiscounts(q)
+		if err != nil {
+			discountsFut.Cancel()
+			return err
+		}
+		discountsFut.Set(discountIDs)
+		return nil
+	})
+
+	launch.Go(func() error {
+		discountIDs, err := discountsFut.Get()
+		if err != nil {
+			return errors.New("discounts not created")
+		}
+		dishIDs, err := dishesFut.Get()
+		if err != nil {
+			return errors.New("dishes not created")
+		}
+		commodityIDs, err := commoditiesFut.Get()
+		if err != nil {
+			return errors.New("commodities not created")
+		}
+		return createDiscountsToTargets(q, discountIDs, dishIDs, commodityIDs)
+	})
+
 	return launch.Wait()
 }
 
@@ -212,7 +263,7 @@ func createUsers(q *queries.Queries) ([]int32, error) {
 	log.Printf("Generating %d users", UserCount)
 	users := make([]queries.CreateUsersParams, 0, UserCount)
 	for range UserCount {
-		users = append(users, generateRandomUser())
+		users = append(users, randomUser())
 	}
 	log.Printf("Creating %d users", len(users))
 	if _, err := q.CreateUsers(context.Background(), users); err != nil {
@@ -228,7 +279,7 @@ func createUsers(q *queries.Queries) ([]int32, error) {
 	return userIDs, nil
 }
 
-func createCards(q *queries.Queries, userIDs []int32) error {
+func createCards(q *queries.Queries, userIDs []int32) ([]int32, error) {
 	log.Print("Generating cards")
 	cards := make([]queries.CreateUserCardsParams, 0, len(userIDs)*CardsPerUserMax)
 	totalCards := 0
@@ -236,16 +287,22 @@ func createCards(q *queries.Queries, userIDs []int32) error {
 		userCardCount := rand.IntN(CardsPerUserMax-CardsPerUserMin) + CardsPerUserMin
 		totalCards += userCardCount
 		for i := 0; i < userCardCount; i++ {
-			cards = append(cards, generateRandomCard(userID))
+			cards = append(cards, randomCard(userID))
 		}
 	}
 
 	log.Printf("Creating %d cards", totalCards)
 	if _, err := q.CreateUserCards(context.Background(), cards[:totalCards]); err != nil {
-		return fmt.Errorf("create cards: %w", err)
+		return nil, fmt.Errorf("create cards: %w", err)
 	}
 
-	return nil
+	log.Print("Selecting card ids")
+	cardIDs, err := q.SelectUserCardIDs(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("select card ids: %w", err)
+	}
+
+	return cardIDs, nil
 }
 
 func createAddresses(q *queries.Queries, userIDs []int32) error {
@@ -256,7 +313,7 @@ func createAddresses(q *queries.Queries, userIDs []int32) error {
 		userAddressCount := rand.IntN(AddressesPerUserMax-AddressesPerUserMin) + AddressesPerUserMin
 		totalAddresses += userAddressCount
 		for i := 0; i < userAddressCount; i++ {
-			cards = append(cards, generateRandomAddress(userID))
+			cards = append(cards, randomAddress(userID))
 		}
 	}
 
@@ -272,7 +329,7 @@ func createCouriers(q *queries.Queries) ([]int32, error) {
 	log.Printf("Generating %d couriers", CourierCount)
 	couriers := make([]queries.CreateCourieresParams, 0, CourierCount)
 	for range CourierCount {
-		couriers = append(couriers, generateRandomCourier())
+		couriers = append(couriers, randomCourier())
 	}
 
 	log.Printf("Creating %d couriers", len(couriers))
@@ -289,11 +346,11 @@ func createCouriers(q *queries.Queries) ([]int32, error) {
 	return courierIDs, nil
 }
 
-func createPayments(q *queries.Queries) ([]int32, error) {
+func createPayments(q *queries.Queries, cardIDs []int32) ([]int32, error) {
 	log.Printf("Generating %d payments", OrderCount)
 	payments := make([]queries.CreatePaymentsParams, 0, OrderCount)
 	for range OrderCount {
-		payments = append(payments, generateRandomPayment())
+		payments = append(payments, randomPayment(cardIDs))
 	}
 
 	log.Printf("Creating %d payments", len(payments))
@@ -314,7 +371,7 @@ func createOrders(q *queries.Queries, userIDs, courierIDs, paymentIDs []int32) (
 	log.Printf("Generating %d orders", OrderCount)
 	orders := make([]queries.CreateOrdersParams, 0, OrderCount)
 	for i := range OrderCount {
-		orders = append(orders, generateRandomOrder(paymentIDs[i], userIDs, courierIDs))
+		orders = append(orders, randomOrder(paymentIDs[i], userIDs, courierIDs))
 	}
 
 	log.Printf("Creating %d orders", len(orders))
@@ -335,7 +392,7 @@ func createSuppliers(q *queries.Queries) ([]int32, error) {
 	log.Printf("Generating %d suppliers", SupplierCount)
 	suppliers := make([]queries.CreateSuppliersParams, 0, SupplierCount)
 	for range SupplierCount {
-		suppliers = append(suppliers, generateRandomSupplier())
+		suppliers = append(suppliers, randomSupplier())
 	}
 
 	log.Printf("Creating %d suppliers", len(suppliers))
@@ -360,7 +417,7 @@ func createDishes(q *queries.Queries, supplierIDs []int32) ([]int32, error) {
 			dishCount := rand.IntN(MaxItemsPerSupplier-MinItemsPerSupplier) + MinItemsPerSupplier
 			taken := make(map[int]struct{})
 			for i := 0; i < dishCount; i++ {
-				dishes = append(dishes, generateRandomDish(supplierID, taken))
+				dishes = append(dishes, randomDish(supplierID, taken))
 			}
 		}
 	}
@@ -388,7 +445,7 @@ func createCommodities(q *queries.Queries, supplierIDs []int32) ([]int32, error)
 			commodityCount := rand.IntN(MaxItemsPerSupplier-MinItemsPerSupplier) + MinItemsPerSupplier
 			taken := make(map[int]struct{})
 			for i := 0; i < commodityCount; i++ {
-				commodities = append(commodities, generateRandomCommodity(supplierID, taken))
+				commodities = append(commodities, randomCommodity(supplierID, taken))
 			}
 		}
 	}
@@ -494,6 +551,79 @@ func createCategoriesToTargets(q *queries.Queries, categoryIDs, dishIDs, commodi
 	log.Printf("Creating %d categories to targets", len(categoriesToTargets))
 	if _, err := q.AssignCategoriesToTargets(context.Background(), categoriesToTargets); err != nil {
 		return fmt.Errorf("create categories to targets: %w", err)
+	}
+
+	return nil
+}
+
+func createDiscounts(q *queries.Queries) ([]int32, error) {
+	log.Print("Creating discounts")
+	discounts := make([]queries.CreateDiscountsParams, 0, DiscountCount)
+	for i := 0; i < DiscountCount; i++ {
+		discounts = append(discounts, randomDiscount())
+	}
+
+	log.Printf("Creating %d discounts", len(discounts))
+	if _, err := q.CreateDiscounts(context.Background(), discounts); err != nil {
+		return nil, fmt.Errorf("create discounts: %w", err)
+	}
+
+	log.Print("Selecting discount ids")
+	discountIDs, err := q.SelectDiscountIDs(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("select discount ids: %w", err)
+	}
+
+	return discountIDs, nil
+}
+
+func createDiscountsToTargets(q *queries.Queries, discountIDs, dishIDs, commodityIDs []int32) error {
+	log.Print("Generating discounts to targets")
+	discountsToTargets := make([]queries.CreateDiscountTargetsParams, 0)
+
+	for _, discountID := range discountIDs {
+		var discountDishIDs, discountCommodityIDs []int32
+
+		if rand.IntN(3) != 0 {
+			discountDishIDs = make([]int32, rand.IntN(10)+1)
+			alreadyChosen := make(map[int]struct{}, len(discountDishIDs))
+			for i := range discountDishIDs {
+				discountDishIDs[i] = chooseUniq(dishIDs, alreadyChosen)
+			}
+		}
+
+		for _, dishID := range discountDishIDs {
+			discountsToTargets = append(discountsToTargets, queries.CreateDiscountTargetsParams{
+				DiscountID: discountID,
+				DishID: pgtype.Int4{
+					Int32: dishID,
+					Valid: true,
+				},
+			})
+		}
+
+		if rand.IntN(3) != 0 || len(discountDishIDs) == 0 {
+			discountCommodityIDs = make([]int32, rand.IntN(10)+1)
+			alreadyChosen := make(map[int]struct{}, len(discountCommodityIDs))
+			for i := range discountCommodityIDs {
+				discountCommodityIDs[i] = chooseUniq(commodityIDs, alreadyChosen)
+			}
+		}
+
+		for _, commodityID := range discountCommodityIDs {
+			discountsToTargets = append(discountsToTargets, queries.CreateDiscountTargetsParams{
+				DiscountID: discountID,
+				CommodityID: pgtype.Int4{
+					Int32: commodityID,
+					Valid: true,
+				},
+			})
+		}
+	}
+
+	log.Printf("Creating %d discounts to targets", len(discountsToTargets))
+	if _, err := q.CreateDiscountTargets(context.Background(), discountsToTargets); err != nil {
+		return fmt.Errorf("create discounts to targets: %w", err)
 	}
 
 	return nil

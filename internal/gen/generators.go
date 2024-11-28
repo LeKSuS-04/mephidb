@@ -74,7 +74,7 @@ func init() {
 	}
 }
 
-func generateRandomUser() queries.CreateUsersParams {
+func randomUser() queries.CreateUsersParams {
 	password := gofakeit.Password(true, true, true, true, true, 32)
 	h := sha256.Sum256([]byte(password))
 	hash := hex.EncodeToString(h[:])
@@ -111,7 +111,7 @@ func generateRandomUser() queries.CreateUsersParams {
 	}
 }
 
-func generateRandomCard(userID int32) queries.CreateUserCardsParams {
+func randomCard(userID int32) queries.CreateUserCardsParams {
 	gofakeit.MinecraftFood()
 	return queries.CreateUserCardsParams{
 		UserID: userID,
@@ -123,14 +123,14 @@ func generateRandomCard(userID int32) queries.CreateUserCardsParams {
 	}
 }
 
-func generateRandomAddress(userID int32) queries.CreateUserAddressesParams {
+func randomAddress(userID int32) queries.CreateUserAddressesParams {
 	return queries.CreateUserAddressesParams{
 		UserID:  userID,
 		Address: gofakeit.Address().Address,
 	}
 }
 
-func generateRandomCourier() queries.CreateCourieresParams {
+func randomCourier() queries.CreateCourieresParams {
 	return queries.CreateCourieresParams{
 		Name:   gofakeit.Name(),
 		Phone:  gofakeit.Phone(),
@@ -138,19 +138,30 @@ func generateRandomCourier() queries.CreateCourieresParams {
 	}
 }
 
-func generateRandomPayment() queries.CreatePaymentsParams {
-	method := choose([]string{"cash", "card", "online"})
+func randomPayment(cardIDs []int32) queries.CreatePaymentsParams {
+	method := choose([]string{"cash", "card", "online", "online", "online", "online", "online"})
 	status := "successful"
-	if method == "online" && rand.IntN(10) == 0 {
+	if method == "online" && rand.IntN(20) == 0 {
 		status = "failed"
 	}
+
+	var cardID int32 = -1
+	if method == "online" {
+		cardID = choose(cardIDs)
+	}
+
 	return queries.CreatePaymentsParams{
 		Method: method,
 		Status: status,
+		CardID: pgtype.Int4{Int32: cardID, Valid: cardID != -1},
+		Timestamp: pgtype.Timestamp{
+			Time:  gofakeit.DateRange(time.Now().Add(-365*24*time.Hour), time.Now()),
+			Valid: true,
+		},
 	}
 }
 
-func generateRandomOrder(paymentID int32, userIDs, courierIDs []int32) queries.CreateOrdersParams {
+func randomOrder(paymentID int32, userIDs, courierIDs []int32) queries.CreateOrdersParams {
 	var status string
 	rng := rand.IntN(100)
 	switch {
@@ -194,7 +205,7 @@ func generateRandomOrder(paymentID int32, userIDs, courierIDs []int32) queries.C
 	}
 }
 
-func generateRandomSupplier() queries.CreateSuppliersParams {
+func randomSupplier() queries.CreateSuppliersParams {
 	return queries.CreateSuppliersParams{
 		Name: gofakeit.Company(),
 		WorkTimeStart: pgtype.Time{
@@ -210,7 +221,7 @@ func generateRandomSupplier() queries.CreateSuppliersParams {
 	}
 }
 
-func generateRandomDish(supplierID int32, alreadyChosen map[int]struct{}) queries.CreateDishesParams {
+func randomDish(supplierID int32, alreadyChosen map[int]struct{}) queries.CreateDishesParams {
 	dish := chooseUniq(predefinedData.Dishes, alreadyChosen)
 	return queries.CreateDishesParams{
 		Name: dish.Name,
@@ -228,7 +239,7 @@ func generateRandomDish(supplierID int32, alreadyChosen map[int]struct{}) querie
 	}
 }
 
-func generateRandomCommodity(supplierID int32, alreadyChosen map[int]struct{}) queries.CreateCommoditiesParams {
+func randomCommodity(supplierID int32, alreadyChosen map[int]struct{}) queries.CreateCommoditiesParams {
 	commodity := chooseUniq(predefinedData.Commodities, alreadyChosen)
 	return queries.CreateCommoditiesParams{
 		Name:        commodity.Name,
@@ -241,8 +252,53 @@ func generateRandomCommodity(supplierID int32, alreadyChosen map[int]struct{}) q
 	}
 }
 
-func generateRandomCategory() string {
-	return choose(categories)
+func randomDiscount() queries.CreateDiscountsParams {
+	type PercentageDiscount struct {
+		Percentage int `json:"percentage"`
+	}
+
+	type ConstDiscount struct {
+		Value int `json:"value"`
+	}
+
+	type ExtraForFree struct {
+		MustBy     int `json:"must_by"`
+		GetForFree int `json:"get_for_free"`
+	}
+
+	var typ string
+	var jsonBytes []byte
+	var discount any
+	switch rand.IntN(3) {
+	case 0:
+		typ = "percentage"
+		discount = PercentageDiscount{
+			Percentage: rand.IntN(30),
+		}
+
+	case 1:
+		typ = "const"
+		discount = ConstDiscount{
+			Value: rand.IntN(10) * 100,
+		}
+
+	case 2:
+		typ = "extra_for_free"
+		discount = ExtraForFree{
+			MustBy:     rand.IntN(5) + 1,
+			GetForFree: rand.IntN(2) + 1,
+		}
+	}
+
+	jsonBytes, _ = json.Marshal(discount)
+
+	return queries.CreateDiscountsParams{
+		Name:        gofakeit.AppName(),
+		Description: gofakeit.LoremIpsumParagraph(rand.IntN(3)+1, rand.IntN(5)+2, rand.IntN(5)+10, "\n\n"),
+		Type:        typ,
+		Terms:       jsonBytes,
+		Active:      rand.IntN(2) == 0,
+	}
 }
 
 func randomRating() pgtype.Numeric {

@@ -38,6 +38,22 @@ type Courier struct {
 	Rating pgtype.Numeric
 }
 
+type Discount struct {
+	ID          int32
+	Name        string
+	Description string
+	Type        string
+	Terms       []byte
+	Active      bool
+}
+
+type DiscountToTarget struct {
+	ID          int32
+	DishID      pgtype.Int4
+	CommodityID pgtype.Int4
+	DiscountID  int32
+}
+
 type Dish struct {
 	ID          int32
 	SupplierID  int32
@@ -60,6 +76,7 @@ type Order struct {
 	CourierID     pgtype.Int4
 	Status        pgtype.Text
 	PaymentID     pgtype.Int4
+	DiscountID    pgtype.Int4
 }
 
 type OrdersComposition struct {
@@ -70,9 +87,11 @@ type OrdersComposition struct {
 }
 
 type Payment struct {
-	ID     int32
-	Method string
-	Status string
+	ID        int32
+	Method    string
+	CardID    pgtype.Int4
+	Timestamp pgtype.Timestamp
+	Status    string
 }
 
 type Supplier struct {

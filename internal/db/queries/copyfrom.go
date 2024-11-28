@@ -181,6 +181,76 @@ func (q *Queries) CreateCourieres(ctx context.Context, arg []CreateCourieresPara
 	return q.db.CopyFrom(ctx, []string{"couriers"}, []string{"name", "phone", "rating"}, &iteratorForCreateCourieres{rows: arg})
 }
 
+// iteratorForCreateDiscountTargets implements pgx.CopyFromSource.
+type iteratorForCreateDiscountTargets struct {
+	rows                 []CreateDiscountTargetsParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateDiscountTargets) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateDiscountTargets) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].DishID,
+		r.rows[0].CommodityID,
+		r.rows[0].DiscountID,
+	}, nil
+}
+
+func (r iteratorForCreateDiscountTargets) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateDiscountTargets(ctx context.Context, arg []CreateDiscountTargetsParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"discount_to_targets"}, []string{"dish_id", "commodity_id", "discount_id"}, &iteratorForCreateDiscountTargets{rows: arg})
+}
+
+// iteratorForCreateDiscounts implements pgx.CopyFromSource.
+type iteratorForCreateDiscounts struct {
+	rows                 []CreateDiscountsParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateDiscounts) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateDiscounts) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].Name,
+		r.rows[0].Description,
+		r.rows[0].Type,
+		r.rows[0].Terms,
+		r.rows[0].Active,
+	}, nil
+}
+
+func (r iteratorForCreateDiscounts) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateDiscounts(ctx context.Context, arg []CreateDiscountsParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"discounts"}, []string{"name", "description", "type", "terms", "active"}, &iteratorForCreateDiscounts{rows: arg})
+}
+
 // iteratorForCreateDishes implements pgx.CopyFromSource.
 type iteratorForCreateDishes struct {
 	rows                 []CreateDishesParams
@@ -280,6 +350,8 @@ func (r *iteratorForCreatePayments) Next() bool {
 func (r iteratorForCreatePayments) Values() ([]interface{}, error) {
 	return []interface{}{
 		r.rows[0].Method,
+		r.rows[0].CardID,
+		r.rows[0].Timestamp,
 		r.rows[0].Status,
 	}, nil
 }
@@ -289,7 +361,7 @@ func (r iteratorForCreatePayments) Err() error {
 }
 
 func (q *Queries) CreatePayments(ctx context.Context, arg []CreatePaymentsParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"payments"}, []string{"method", "status"}, &iteratorForCreatePayments{rows: arg})
+	return q.db.CopyFrom(ctx, []string{"payments"}, []string{"method", "card_id", "timestamp", "status"}, &iteratorForCreatePayments{rows: arg})
 }
 
 // iteratorForCreateSuppliers implements pgx.CopyFromSource.

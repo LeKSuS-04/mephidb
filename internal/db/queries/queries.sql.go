@@ -39,6 +39,20 @@ type CreateCourieresParams struct {
 	Rating pgtype.Numeric
 }
 
+type CreateDiscountTargetsParams struct {
+	DishID      pgtype.Int4
+	CommodityID pgtype.Int4
+	DiscountID  int32
+}
+
+type CreateDiscountsParams struct {
+	Name        string
+	Description string
+	Type        string
+	Terms       []byte
+	Active      bool
+}
+
 type CreateDishesParams struct {
 	SupplierID  int32
 	Name        string
@@ -62,8 +76,10 @@ type CreateOrdersParams struct {
 }
 
 type CreatePaymentsParams struct {
-	Method string
-	Status string
+	Method    string
+	CardID    pgtype.Int4
+	Timestamp pgtype.Timestamp
+	Status    string
 }
 
 type CreateSuppliersParams struct {
@@ -164,6 +180,30 @@ func (q *Queries) SelectCourierIDs(ctx context.Context) ([]int32, error) {
 	return items, nil
 }
 
+const selectDiscountIDs = `-- name: SelectDiscountIDs :many
+SELECT id FROM discounts
+`
+
+func (q *Queries) SelectDiscountIDs(ctx context.Context) ([]int32, error) {
+	rows, err := q.db.Query(ctx, selectDiscountIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var id int32
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const selectDishIDs = `-- name: SelectDishIDs :many
 SELECT id FROM dishes
 `
@@ -242,6 +282,30 @@ SELECT id FROM suppliers
 
 func (q *Queries) SelectSupplierIDs(ctx context.Context) ([]int32, error) {
 	rows, err := q.db.Query(ctx, selectSupplierIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var id int32
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const selectUserCardIDs = `-- name: SelectUserCardIDs :many
+SELECT id FROM user_cards
+`
+
+func (q *Queries) SelectUserCardIDs(ctx context.Context) ([]int32, error) {
+	rows, err := q.db.Query(ctx, selectUserCardIDs)
 	if err != nil {
 		return nil, err
 	}
