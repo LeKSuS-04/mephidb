@@ -1,4 +1,5 @@
-CREATE EXTENSION btree_gin;
+CREATE EXTENSION IF NOT EXISTS btree_gin;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -135,3 +136,23 @@ CREATE TABLE categories_to_targets (
     commodity_id INTEGER REFERENCES commodities(id) ON DELETE CASCADE,
     category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE
 );
+
+CREATE INDEX orders_timestamp_year_month ON orders USING BTREE (EXTRACT(YEAR FROM timestamp), EXTRACT(MONTH FROM timestamp));
+CREATE INDEX orders_timestamp_hour ON orders USING BTREE (EXTRACT(HOUR FROM timestamp));
+
+CREATE INDEX suppliers_address ON suppliers USING GIN (address gin_trgm_ops);
+CREATE INDEX orders_target_address ON orders USING BTREE (target_address);
+
+CREATE INDEX users_surname_prefix ON users USING BTREE (surname text_pattern_ops);
+CREATE INDEX dishes_name_prefix ON dishes USING BTREE (name text_pattern_ops);
+CREATE INDEX commodities_name_prefix ON commodities USING BTREE (name text_pattern_ops);
+
+CREATE INDEX dishes_rating ON dishes USING BTREE (rating);
+CREATE INDEX commodities_rating ON commodities USING BTREE (rating);
+
+CREATE INDEX dishes_cost ON dishes USING BTREE (cost);
+CREATE INDEX commodities_cost ON commodities USING BTREE (cost);
+
+CREATE INDEX orders_user_timestamp ON orders USING BTREE (user_id, timestamp);
+CREATE INDEX orders_composition_order_dish ON orders_composition USING BTREE (order_id, dish_id);
+CREATE INDEX orders_composition_order_commodity ON orders_composition USING BTREE (order_id, commodity_id);
